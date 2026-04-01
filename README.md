@@ -12,12 +12,14 @@ A Hospital Management System to manage patients, doctors, appointments, and bill
 ## 🛠 Tech Stack
 - Java
 - MySQL
-- JDBC / Spring Boot
+- JDBC 
+- Docker
 
 ## 👥 Team
-- Your Name
-- Teammate 1
-- Teammate 2
+- Dhaani Sharma 
+- Dhrubajit Chakravarty
+- Hardik Virmani
+- Ishan Sagar
 
 ## ⚙️ Setup Instructions
 1. Clone the repo
