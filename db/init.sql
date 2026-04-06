@@ -55,6 +55,8 @@ Create table Patient(
     DOB date, 
     Blood_Group char(3), 
     Phone varchar(15), 
+    Email varchar(225) unique,
+    Password varchar(255),
     Address varchar(355), 
     Emergency_Contact varchar(15) 
 );
@@ -77,7 +79,19 @@ Create table Doctor(
     Doctor_Name varchar(225), 
     Specilization varchar(300),
     Phone varchar(15), 
-    Email varchar(225),
+    Email varchar(225) unique,
+    Password varchar(255),
+    Foreign key (Hospital_ID) references Hospital(Hospital_ID)
+);
+
+Create table Staff(
+    Staff_ID int primary key auto_increment, 
+    Hospital_ID int,
+    Staff_Name varchar(225), 
+    Role varchar(100),
+    Phone varchar(15), 
+    Email varchar(225) unique,
+    Password varchar(255),
     Foreign key (Hospital_ID) references Hospital(Hospital_ID)
 );
 
@@ -135,4 +149,25 @@ Create table Dispatch(
     Foreign key (Request_ID) references Emergency_Request(Request_ID), 
     Foreign key (Ambulance_ID) references Ambulance(Ambulance_ID), 
     Foreign key (Doctor_ID) references Doctor(Doctor_ID) 
+);
+
+Create table Billing(
+    Bill_ID int primary key auto_increment,
+    Patient_ID int,
+    Hospital_ID int,
+    Amount decimal(10,2),
+    Status varchar(20) default 'Pending',
+    Date_Issued timestamp default current_timestamp,
+    Foreign key (Patient_ID) references Patient(Patient_ID),
+    Foreign key (Hospital_ID) references Hospital(Hospital_ID)
+);
+
+Create table Prescription(
+    Prescription_ID int primary key auto_increment,
+    Treatment_ID int,
+    Medicine_ID int,
+    Quantity int,
+    Prescription_Date timestamp default current_timestamp,
+    Foreign key (Treatment_ID) references Treatment(Treatment_ID),
+    Foreign key (Medicine_ID) references Medicine(Medicine_ID)
 );
