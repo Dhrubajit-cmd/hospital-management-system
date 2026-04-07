@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class PatientDashboard extends JFrame {
     private int patientId;
@@ -59,7 +60,7 @@ public class PatientDashboard extends JFrame {
 
         // 3. Emergency Request Tab
         JPanel erPanelOuter = new JPanel(new BorderLayout());
-        JPanel erPanel = new JPanel(new GridLayout(3, 2, 10, 10));
+        JPanel erPanel = new JPanel(new GridLayout(4, 2, 10, 10));
         erPanel.setBorder(BorderFactory.createEmptyBorder(50, 150, 250, 150));
 
         erPanel.add(new JLabel("Request Type (e.g., Accident, Heart Attack):"));
@@ -72,8 +73,11 @@ public class PatientDashboard extends JFrame {
 
         JButton submitErBtn = new JButton("Submit Emergency Request");
         submitErBtn.addActionListener(this::submitEmergencyRequest);
-        erPanel.add(new JLabel("")); // spacer
         erPanel.add(submitErBtn);
+
+        JButton cancelErBtn = new JButton("Cancel Pending Requests");
+        cancelErBtn.addActionListener(this::cancelEmergencyRequest);
+        erPanel.add(cancelErBtn);
 
         erPanelOuter.add(erPanel, BorderLayout.CENTER);
         tabbedPane.addTab("Emergency Request", erPanelOuter);
@@ -91,6 +95,16 @@ public class PatientDashboard extends JFrame {
 
         setVisible(true);
     }
+
+    // --- POLYMORPHISM DEMONSTRATION: Method Overloading ---
+    private void showNotification(String message) {
+        JOptionPane.showMessageDialog(this, message);
+    }
+
+    private void showNotification(String message, String title, int messageType) {
+        JOptionPane.showMessageDialog(this, message, title, messageType);
+    }
+    // --------------------------------------------------------
 
     private void loadMedicalRecords() {
         DefaultTableModel model = new DefaultTableModel();
@@ -195,12 +209,33 @@ public class PatientDashboard extends JFrame {
 
             int rows = pst.executeUpdate();
             if (rows > 0) {
-                JOptionPane.showMessageDialog(this, "Emergency Request Submitted Successfully!");
+                showNotification("Emergency Request Submitted Successfully!");
                 erTypeField.setText("");
+            }
+        } catch (NumberFormatException nfe) {
+            showNotification("Error: Priority Level must be a valid number.", "Input Error", JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException sqle) {
+            showNotification("Database Error: " + sqle.getMessage(), "SQL Error", JOptionPane.ERROR_MESSAGE);
+            sqle.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            showNotification("An unexpected error occurred: " + ex.getMessage());
+        }
+    }
+
+    private void cancelEmergencyRequest(ActionEvent e) {
+        String query = "DELETE FROM Emergency_Request WHERE Patient_ID = ? AND Req_Status = 'Pending'";
+        try (Connection con = DBConnection.getConnection(); PreparedStatement pst = con.prepareStatement(query)) {
+            pst.setInt(1, patientId);
+            int rowsDeleted = pst.executeUpdate();
+            if (rowsDeleted > 0) {
+                JOptionPane.showMessageDialog(this, "Successfully canceled " + rowsDeleted + " pending emergency request(s).");
+            } else {
+                JOptionPane.showMessageDialog(this, "You have no pending emergency requests to cancel.");
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error submitting request: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Error canceling requests: " + ex.getMessage());
         }
     }
 }
