@@ -10,8 +10,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-public class StaffDashboard extends JFrame {
-    private int staffId;
+public class StaffDashboard extends BaseDashboard {
 
     // Reg Fields
     private JTextField nameField, dobField, phoneField, emailField, addressField, emgContactField;
@@ -31,7 +30,7 @@ public class StaffDashboard extends JFrame {
     private JTextField bloodUnitsField;
 
     public StaffDashboard(int staffId) {
-        this.staffId = staffId;
+        super(staffId);
 
         setTitle("Staff Dashboard");
         setSize(1000, 700);

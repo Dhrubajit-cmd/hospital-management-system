@@ -13,8 +13,7 @@ import java.sql.Statement;
 import java.sql.Date;
 import java.time.LocalDate;
 
-public class DoctorDashboard extends JFrame {
-    private int doctorId;
+public class DoctorDashboard extends BaseDashboard {
     
     // Tab 1: My Patients
     private JTable patientRecordsTable;
@@ -28,7 +27,7 @@ public class DoctorDashboard extends JFrame {
     private JTextField rxPatientIdField, rxMedicineIdField, rxQuantityField;
 
     public DoctorDashboard(int doctorId) {
-        this.doctorId = doctorId;
+        super(doctorId);
 
         setTitle("Doctor Ecosystem Ecosystem Dashboard");
         setSize(800, 600);
@@ -142,7 +141,7 @@ public class DoctorDashboard extends JFrame {
                            "JOIN Medical_Record M ON T.Record_ID = M.Record_ID " +
                            "WHERE T.Doctor_ID = ?";
             PreparedStatement pst = con.prepareStatement(query);
-            pst.setInt(1, doctorId);
+            pst.setInt(1, this.userId);
             ResultSet rs = pst.executeQuery();
 
             while (rs.next()) {
@@ -199,7 +198,7 @@ public class DoctorDashboard extends JFrame {
 
             String query2 = "INSERT INTO Treatment (Doctor_ID, Patient_ID, Record_ID, Treatment_Date) VALUES (?, ?, ?, ?)";
             PreparedStatement pst2 = con.prepareStatement(query2);
-            pst2.setInt(1, this.doctorId);
+            pst2.setInt(1, this.userId);
             pst2.setInt(2, patientId);
             pst2.setInt(3, recordId);
             pst2.setDate(4, Date.valueOf(LocalDate.now())); 
@@ -225,7 +224,7 @@ public class DoctorDashboard extends JFrame {
             // 1. Get corresponding Treatment_ID 
             PreparedStatement getTid = con.prepareStatement("SELECT Treatment_ID FROM Treatment WHERE Patient_ID = ? AND Doctor_ID = ? ORDER BY Treatment_Date DESC LIMIT 1");
             getTid.setInt(1, pId);
-            getTid.setInt(2, this.doctorId);
+            getTid.setInt(2, this.userId);
             ResultSet rsTid = getTid.executeQuery();
             
             if(!rsTid.next()) {

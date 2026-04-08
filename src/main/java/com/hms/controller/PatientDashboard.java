@@ -11,8 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class PatientDashboard extends JFrame {
-    private int patientId;
+public class PatientDashboard extends BaseDashboard {
     private JTable recordsTable;
     private JTable billingTable;
 
@@ -21,7 +20,7 @@ public class PatientDashboard extends JFrame {
     private JComboBox<String> erPriorityBox;
 
     public PatientDashboard(int patientId) {
-        this.patientId = patientId;
+        super(patientId);
 
         setTitle("Patient Dashboard");
         setSize(800, 600);
@@ -117,7 +116,7 @@ public class PatientDashboard extends JFrame {
         try (Connection con = DBConnection.getConnection()) {
             String query = "SELECT Record_ID, Diagnosis, Treatment, Admission_Date, Discharge_Date FROM Medical_Record WHERE Patient_ID = ?";
             PreparedStatement pst = con.prepareStatement(query);
-            pst.setInt(1, patientId);
+            pst.setInt(1, this.userId);
             ResultSet rs = pst.executeQuery();
 
             while (rs.next()) {
@@ -146,7 +145,7 @@ public class PatientDashboard extends JFrame {
         try (Connection con = DBConnection.getConnection()) {
             String query = "SELECT Bill_ID, Amount, Status, Date_Issued FROM Billing WHERE Patient_ID = ?";
             PreparedStatement pst = con.prepareStatement(query);
-            pst.setInt(1, patientId);
+            pst.setInt(1, this.userId);
             ResultSet rs = pst.executeQuery();
 
             while (rs.next()) {
@@ -203,7 +202,7 @@ public class PatientDashboard extends JFrame {
     private void submitEmergencyRequest(ActionEvent e) {
         String query = "INSERT INTO Emergency_Request (Patient_ID, Hospital_ID, Request_Type, Priority_Level, Req_Status) VALUES (?, 1, ?, ?, 'Pending')";
         try (Connection con = DBConnection.getConnection(); PreparedStatement pst = con.prepareStatement(query)) {
-            pst.setInt(1, patientId); // Automatically bound to logged-in user
+            pst.setInt(1, this.userId); // Automatically bound to logged-in user
             pst.setString(2, erTypeField.getText());
             pst.setInt(3, Integer.parseInt(erPriorityBox.getSelectedItem().toString()));
 
@@ -226,7 +225,7 @@ public class PatientDashboard extends JFrame {
     private void cancelEmergencyRequest(ActionEvent e) {
         String query = "DELETE FROM Emergency_Request WHERE Patient_ID = ? AND Req_Status = 'Pending'";
         try (Connection con = DBConnection.getConnection(); PreparedStatement pst = con.prepareStatement(query)) {
-            pst.setInt(1, patientId);
+            pst.setInt(1, this.userId);
             int rowsDeleted = pst.executeUpdate();
             if (rowsDeleted > 0) {
                 JOptionPane.showMessageDialog(this, "Successfully canceled " + rowsDeleted + " pending emergency request(s).");
