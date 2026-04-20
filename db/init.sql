@@ -57,8 +57,13 @@ Create table Patient(
     Phone varchar(15), 
     Email varchar(225) unique,
     Password varchar(255),
-    Address varchar(355), 
-    Emergency_Contact varchar(15) 
+    Address varchar(355) 
+);
+
+Create table Patient_Contact(
+    Patient_ID int,
+    Contact_No varchar(15),
+    Foreign key (Patient_ID) references Patient(Patient_ID) ON DELETE CASCADE
 );
 
 Create table Medical_Record(
@@ -97,23 +102,31 @@ Create table Staff(
 
 Create table Treatment(
     Treatment_ID int primary key auto_increment, 
-    Doctor_ID int, 
-    Patient_ID int, 
     Record_ID int, 
     Treatment_Date date, 
-    Foreign key (Doctor_ID) references Doctor(Doctor_ID), 
-    Foreign key (Patient_ID) references Patient(Patient_ID), 
     Foreign key (Record_ID) references Medical_Record(Record_ID)
+);
+
+Create table Doctor_Treatment(
+    Treatment_ID int,
+    Doctor_ID int,
+    Foreign key (Treatment_ID) references Treatment(Treatment_ID) ON DELETE CASCADE,
+    Foreign key (Doctor_ID) references Doctor(Doctor_ID) ON DELETE CASCADE
 );
 
 Create table Medicine(
     Medicine_ID int primary key auto_increment, 
     Medicine_Name varchar(255), 
     Description text, 
-    Contents text, 
     Category varchar(50), 
     Unit_Price decimal(8,2),
     Manufacturer varchar(255)
+);
+
+Create table Medicine_Content(
+    Medicine_ID int,
+    Content_Name text,
+    Foreign key (Medicine_ID) references Medicine(Medicine_ID) ON DELETE CASCADE
 );
 
 Create table Medicine_Stock(
@@ -141,14 +154,24 @@ Create table Emergency_Request(
 Create table Dispatch(
     Dispatch_ID int primary key auto_increment, 
     Request_ID int, 
-    Ambulance_ID int, 
-    Doctor_ID int, 
     Dispatch_Time timestamp default current_timestamp, 
     Arrival_Time timestamp, 
     Dispatch_Status varchar(20), 
-    Foreign key (Request_ID) references Emergency_Request(Request_ID), 
-    Foreign key (Ambulance_ID) references Ambulance(Ambulance_ID), 
-    Foreign key (Doctor_ID) references Doctor(Doctor_ID) 
+    Foreign key (Request_ID) references Emergency_Request(Request_ID) 
+);
+
+Create table Dispatch_Ambulance(
+    Dispatch_ID int,
+    Ambulance_ID int,
+    Foreign key (Dispatch_ID) references Dispatch(Dispatch_ID) ON DELETE CASCADE,
+    Foreign key (Ambulance_ID) references Ambulance(Ambulance_ID) ON DELETE CASCADE
+);
+
+Create table Dispatch_Doctor(
+    Dispatch_ID int,
+    Doctor_ID int,
+    Foreign key (Dispatch_ID) references Dispatch(Dispatch_ID) ON DELETE CASCADE,
+    Foreign key (Doctor_ID) references Doctor(Doctor_ID) ON DELETE CASCADE
 );
 
 Create table Billing(

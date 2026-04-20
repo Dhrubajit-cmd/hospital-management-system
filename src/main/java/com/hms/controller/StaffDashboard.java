@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 
 public class StaffDashboard extends BaseDashboard {
 
@@ -215,8 +216,8 @@ public class StaffDashboard extends BaseDashboard {
     // --- Action Methods ---
 
     private void registerPatient(ActionEvent e) {
-        String query = "INSERT INTO Patient (Patient_Name, Gender, DOB, Blood_Group, Phone, Email, Password, Address, Emergency_Contact) VALUES (?, ?, ?, ?, ?, ?, 'password123', ?, ?)";
-        try (Connection con = DBConnection.getConnection(); PreparedStatement pst = con.prepareStatement(query)) {
+        String query = "INSERT INTO Patient (Patient_Name, Gender, DOB, Blood_Group, Phone, Email, Password, Address) VALUES (?, ?, ?, ?, ?, ?, 'password123', ?)";
+        try (Connection con = DBConnection.getConnection(); PreparedStatement pst = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             pst.setString(1, nameField.getText());
             pst.setString(2, genderBox.getSelectedItem().toString());
             pst.setString(3, dobField.getText());
@@ -224,10 +225,22 @@ public class StaffDashboard extends BaseDashboard {
             pst.setString(5, phoneField.getText());
             pst.setString(6, emailField.getText());
             pst.setString(7, addressField.getText());
-            pst.setString(8, emgContactField.getText());
 
             int rows = pst.executeUpdate();
             if (rows > 0) {
+                ResultSet rs = pst.getGeneratedKeys();
+                if (rs.next()) {
+                    int newPid = rs.getInt(1);
+                    String contactStr = emgContactField.getText();
+                    if (contactStr != null && !contactStr.isEmpty()) {
+                        String contactQuery = "INSERT INTO Patient_Contact (Patient_ID, Contact_No) VALUES (?, ?)";
+                        try (PreparedStatement pcPst = con.prepareStatement(contactQuery)) {
+                            pcPst.setInt(1, newPid);
+                            pcPst.setString(2, contactStr);
+                            pcPst.executeUpdate();
+                        }
+                    }
+                }
                 JOptionPane.showMessageDialog(this, "Patient Registered Successfully!\nDefault Password is: password123");
             }
         } catch (Exception ex) {
@@ -290,10 +303,18 @@ public class StaffDashboard extends BaseDashboard {
             int ambId = Integer.parseInt(dispatchAmbIdField.getText());
             
             // Insert Dispatch
-            PreparedStatement pst1 = con.prepareStatement("INSERT INTO Dispatch (Request_ID, Ambulance_ID, Dispatch_Status) VALUES (?, ?, 'Dispatched')");
+            PreparedStatement pst1 = con.prepareStatement("INSERT INTO Dispatch (Request_ID, Dispatch_Status) VALUES (?, 'Dispatched')", Statement.RETURN_GENERATED_KEYS);
             pst1.setInt(1, reqId);
-            pst1.setInt(2, ambId);
             pst1.executeUpdate();
+            
+            ResultSet rs = pst1.getGeneratedKeys();
+            if (rs.next()) {
+                int dispatchId = rs.getInt(1);
+                PreparedStatement pstAmb = con.prepareStatement("INSERT INTO Dispatch_Ambulance (Dispatch_ID, Ambulance_ID) VALUES (?, ?)");
+                pstAmb.setInt(1, dispatchId);
+                pstAmb.setInt(2, ambId);
+                pstAmb.executeUpdate();
+            }
             
             // Update Req
             PreparedStatement pst2 = con.prepareStatement("UPDATE Emergency_Request SET Req_Status = 'Dispatched' WHERE Request_ID = ?");
