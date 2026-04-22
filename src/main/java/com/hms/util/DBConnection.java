@@ -16,6 +16,14 @@ public class DBConnection {
 
             return DriverManager.getConnection(url, user, password);
 
+        } catch (ClassNotFoundException cnfe) {
+            cnfe.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(null, "MySQL Driver missing: " + cnfe.getMessage());
+            return null;
+        } catch (java.sql.SQLException sqle) {
+            sqle.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(null, "Database Connection refused: " + sqle.getMessage());
+            return null;
         } catch (Exception e) {
             e.printStackTrace();
             javax.swing.JOptionPane.showMessageDialog(null, "DB Error: " + e.getMessage());
