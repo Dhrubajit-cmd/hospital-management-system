@@ -1,9 +1,5 @@
-
-DROP DATABASE IF EXISTS hospital_management;
-CREATE DATABASE hospital_management;
 USE hospital_management;
 
-SOURCE /docker-entrypoint-initdb.d/init.sql;
 
 -- REALISTIC MOCK DATA INSERTS --
 
